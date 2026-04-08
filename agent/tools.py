@@ -75,11 +75,14 @@ def tool(description: Optional[str] = None):
 
 @tool(description="Get the current date and time. Format: yyyy/mm/dd h:m:s")
 def get_current_date_time():
-    return datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+    t_now = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
+    return t_now
 
 @tool(description="List the directories and files in the mardown vault.")
-def get_file_structure():
+def get_note_paths(subdir: str = ""):
     path = VAULT_PATH
+    if subdir:
+        path = os.path.join(path, subdir)
     try:
         return {
             "status": "success",
@@ -91,15 +94,63 @@ def get_file_structure():
             "status": "fail",
             "message": f"{e}"
         }
+    
+@tool(description="Load specific markdown note file")
+def read_markdown_note_file(local_path: str):
+    if ".." in local_path:
+        raise EnvironmentError("Navigating out of the local directory is not allowed.")
+    
+    path = os.path.join(VAULT_PATH, local_path)
+    if not path.lower().endswith(".md"):
+        raise EnvironmentError("Only markdown files may be read.")
 
-@tool(description="create plan for execution")
-def make_plan(steps: list, next_state: str):
-    pass
+    with open(path, 'r') as file:
+        output = file.read()
+    
+    return output
+
+def list_note_paths(subdir: str = ""):
+    path = VAULT_PATH
+    if subdir:
+        path = os.path.join(path, subdir)
+
+    output = {
+        "directories": {},
+        "files": {},
+    }
+    try:
+        for next_subdir in [f for f in os.listdir(path) if not os.path.isfile(os.path.join(path, f))]:
+            output["directories"][subdir] = list_note_paths(os.path.join(subdir, next_subdir))
+        
+        for file in [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]:
+            if not path.lower().endswith(".md"):
+                continue
+
+            output["files"][file] = {}
+        
+        return output
+
+    except OSError as e:
+        return {
+            "status": "fail",
+            "message": f"{e}"
+        }
+    
 
 
+# @tool(description="create plan for execution")
+# def make_plan(steps: list, next_state: str):
+#     pass
 
-if __name__ == "__main__":
-    # print(get_file_structure(os.getcwd()))
-    # print(get_file_structure("agent"))
-    # print(get_file_structure("a"))
-    print(TOOLS)
+
+tool_dict = {
+    "get_current_date_time": get_current_date_time,
+    "get_note_paths": get_note_paths,
+    "read_markdown_note_file": read_markdown_note_file
+}
+
+# if __name__ == "__main__":
+#     # print(get_file_structure(os.getcwd()))
+#     # print(get_file_structure("agent"))
+#     # print(get_file_structure("a"))
+#     print(list_note_paths())
