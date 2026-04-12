@@ -13,6 +13,8 @@ EMBEDDING_MODEL = "nomic-embed-text"
 CHUNK_SIZE = 500
 CHUNK_OVERLAP = 100
 
+WELCOME_MESSAGE = "Hello there."
+
 
 from openai import OpenAI
 

@@ -1,4 +1,4 @@
-from config import client
+from config import client, WELCOME_MESSAGE
 from datetime import datetime
 import json
 from llm.llm import LLM
@@ -75,14 +75,30 @@ from agent.tools import TOOLS, tool_dict, list_note_paths, get_markdown_headers
 #                     raise RuntimeError(f"Function call failed: {e}")
 #                 # print(f"Result: {globals()[part.name](**dict(part.arguments))}")
 
+def display_history(history: list, layer=1):
+    spacer = '|' + '____'*layer
+    for line in history:
+        print(f"{spacer}{line}")
 
 if __name__ == "__main__":
-    model = LLM(model="qwen/qwen3.5-35b-a3b", sys_prompt="Be helpful.", tool_descriptions=[])
-    my_agent = AgentController(model=model, tools=[])
-    print("Hello World")
+    model = LLM(model="qwen/qwen3-1.7b", sys_prompt="Be helpful.", tool_descriptions=TOOLS)
+    my_agent = AgentController(model=model, tools=tool_dict)
+    external_history = [
+        {
+            "role": "system",
+            "content": f"Available Markdown Notes:\n\n{list_note_paths()}"
+        },
+        {
+            "role": "assistant",
+            "content": WELCOME_MESSAGE
+        }
+    ]
+    print(TOOLS)
+    print(WELCOME_MESSAGE)
     user_input = input()
     while user_input:
-        message, external_history, internal_history = my_agent.run(user_input=user_input)
+        message, external_history, internal_history = my_agent.run(user_input=user_input, external_history=external_history)
+        display_history(internal_history)
         print(message)
         user_input = input()
     # print(json.dumps(list_note_paths(), indent=4))

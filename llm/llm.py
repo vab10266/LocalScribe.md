@@ -12,21 +12,31 @@ class LLM:
         self.tool_descriptions = tool_descriptions
     
     def chat(self, input: str | list):
-        response = client.responses.parse(
+        spacer = '|' + '____'*1
+        for line in input:
+            print(f"{spacer}{line}")
+        response = client.chat.completions.create(
             model=self.model,
-            instructions = self.sys_prompt,
-            input=input,
+            # instructions = self.sys_prompt,
+            messages=input,
             tools=self.tool_descriptions,
         )
 
-        reasoning, output, tool_call = None, None, None
-        for part in response.output:
-            if part.type == "reasoning":
-                reasoning = ', '.join([c.text for c in part.content])
-            elif part.type == "message":
-                output = ', '.join([c.text for c in part.content])
-                output = output.strip()
-            elif part.type == "function_call":
-                tool_call = part.name, part.arguments[1:-1]
+        # reasoning, output, tool_call = None, None, None
+        # print(response.output)
+        # for part in response.output:
+        #     if part.type == "reasoning":
+        #         reasoning = ', '.join([c.text for c in part.content])
+        #     elif part.type == "message":
+        #         output = ', '.join([c.text for c in part.content])
+        #         output = output.strip()
+        #     elif part.type == "function_call":
+        #         print(part)
+        #         tool_call = part.name, part.arguments, part.call_id
+
+
+        message = response.choices[0].message
+
+        
                 
-        return reasoning, output, tool_call
+        return message

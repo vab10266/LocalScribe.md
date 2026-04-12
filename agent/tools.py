@@ -58,13 +58,15 @@ def tool(description: Optional[str] = None):
 
         schema = {
             "type": "function",
-            "name": fn.__name__,
-            "description": description or (fn.__doc__ or "").strip(),
-            "parameters": {
-                "type": "object",
-                "properties": properties,
-                "required": required,
-            },
+            "function": {
+                "name": fn.__name__,
+                "description": description or (fn.__doc__ or "").strip(),
+                "parameters": {
+                    "type": "object",
+                    "properties": properties,
+                    "required": required,
+                },
+            }
         }
 
         TOOLS.append(schema)
@@ -78,36 +80,39 @@ def get_current_date_time():
     t_now = datetime.now().strftime("%Y/%m/%d %H:%M:%S")
     return t_now
 
-@tool(description="List the directories and files in the mardown vault.")
-def get_note_paths(subdir: str = ""):
-    path = VAULT_PATH
-    if subdir:
-        path = os.path.join(path, subdir)
-    try:
-        return {
-            "status": "success",
-            "directories": [f for f in os.listdir(path) if not os.path.isfile(os.path.join(path, f))],
-            "files": [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
-        }
-    except OSError as e:
-        return {
-            "status": "fail",
-            "message": f"{e}"
-        }
+# @tool(description="List the directories and files in the mardown vault.")
+# def get_note_paths(subdir: str = ""):
+#     path = VAULT_PATH
+#     if subdir:
+#         path = os.path.join(path, subdir)
+#     try:
+#         return {
+#             "status": "success",
+#             "directories": [f for f in os.listdir(path) if not os.path.isfile(os.path.join(path, f))],
+#             "files": [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
+#         }
+#     except OSError as e:
+#         return {
+#             "status": "fail",
+#             "message": f"{e}"
+#         }
     
 @tool(description="Load specific markdown note file")
 def read_markdown_note_file(local_path: str):
+    print(local_path)
     if ".." in local_path:
         raise EnvironmentError("Navigating out of the local directory is not allowed.")
     
     path = os.path.join(VAULT_PATH, local_path)
+    print(local_path)
     if not path.lower().endswith(".md"):
         raise EnvironmentError("Only markdown files may be read.")
 
-    with open(path, 'r') as file:
+    with open(path, 'r', encoding='utf-8') as file:
         output = file.read()
     
     return output
+
 @tool(description="List the directories and files in the mardown vault, with nested structure.")
 def list_note_paths(subdir: str = ""):
     path = VAULT_PATH
@@ -145,7 +150,7 @@ def list_note_paths(subdir: str = ""):
                 os.path.join(path, f)
             ) and not f.startswith(".") and f.lower().endswith(".md")
         ]:
-            print(get_markdown_headers(os.path.join(path, file)))
+            # print(get_markdown_headers(os.path.join(path, file)))
             output["files"].append(file)
 
         return output
@@ -158,8 +163,9 @@ def list_note_paths(subdir: str = ""):
     
 @tool(description="Get the headers from a markdown file.")
 def get_markdown_headers(file_path: str):
+    path = VAULT_PATH
     headers = []
-    with open(file_path, 'r') as file:
+    with open(os.path.join(path, file_path), 'r', encoding='utf-8') as file:
         for line in file:
             if line.startswith("#"):
                 headers.append(line.strip())
@@ -168,9 +174,9 @@ def get_markdown_headers(file_path: str):
 
 tool_dict = {
     "get_current_date_time": get_current_date_time,
-    "get_note_paths": get_note_paths,
-    "read_markdown_note_file": read_markdown_note_file,
-    "get_markdown_headers": get_markdown_headers
+    "list_note_paths": list_note_paths,
+    "get_markdown_headers": get_markdown_headers,
+    "read_markdown_note_file": read_markdown_note_file
 }
 
 # if __name__ == "__main__":
