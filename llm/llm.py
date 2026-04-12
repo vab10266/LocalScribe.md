@@ -17,26 +17,10 @@ class LLM:
             print(f"{spacer}{line}")
         response = client.chat.completions.create(
             model=self.model,
-            # instructions = self.sys_prompt,
             messages=input,
             tools=self.tool_descriptions,
         )
 
-        # reasoning, output, tool_call = None, None, None
-        # print(response.output)
-        # for part in response.output:
-        #     if part.type == "reasoning":
-        #         reasoning = ', '.join([c.text for c in part.content])
-        #     elif part.type == "message":
-        #         output = ', '.join([c.text for c in part.content])
-        #         output = output.strip()
-        #     elif part.type == "function_call":
-        #         print(part)
-        #         tool_call = part.name, part.arguments, part.call_id
-
-
         message = response.choices[0].message
 
-        
-                
         return message
