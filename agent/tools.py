@@ -108,26 +108,46 @@ def read_markdown_note_file(local_path: str):
         output = file.read()
     
     return output
-
+@tool(description="List the directories and files in the mardown vault, with nested structure.")
 def list_note_paths(subdir: str = ""):
     path = VAULT_PATH
+
     if subdir:
         path = os.path.join(path, subdir)
 
+    # print(f"Listing contents of: {path}")
+    # print([
+    #         f for f in os.listdir(path) if not os.path.isfile(
+    #             os.path.join(path, f)
+    #         ) and not f.startswith(".")
+    #     ])
+    # print([
+    #         f for f in os.listdir(path) if os.path.isfile(
+    #             os.path.join(path, f)
+    #         ) and not f.startswith(".") and f.lower().endswith(".md")
+    #     ])
+
     output = {
         "directories": {},
-        "files": {},
+        "files": [],
     }
-    try:
-        for next_subdir in [f for f in os.listdir(path) if not os.path.isfile(os.path.join(path, f))]:
-            output["directories"][subdir] = list_note_paths(os.path.join(subdir, next_subdir))
-        
-        for file in [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]:
-            if not path.lower().endswith(".md"):
-                continue
 
-            output["files"][file] = {}
+    try:
+        for next_subdir in [
+            f for f in os.listdir(path) if not os.path.isfile(
+                os.path.join(path, f)
+            ) and not f.startswith(".")
+        ]:
+            output["directories"][next_subdir] = list_note_paths(os.path.join(subdir, next_subdir))
         
+        for file in [
+            f for f in os.listdir(path) if os.path.isfile(
+                os.path.join(path, f)
+            ) and not f.startswith(".") and f.lower().endswith(".md")
+        ]:
+            print(get_markdown_headers(os.path.join(path, file)))
+            output["files"].append(file)
+
         return output
 
     except OSError as e:
@@ -136,17 +156,21 @@ def list_note_paths(subdir: str = ""):
             "message": f"{e}"
         }
     
-
-
-# @tool(description="create plan for execution")
-# def make_plan(steps: list, next_state: str):
-#     pass
+@tool(description="Get the headers from a markdown file.")
+def get_markdown_headers(file_path: str):
+    headers = []
+    with open(file_path, 'r') as file:
+        for line in file:
+            if line.startswith("#"):
+                headers.append(line.strip())
+    return headers
 
 
 tool_dict = {
     "get_current_date_time": get_current_date_time,
     "get_note_paths": get_note_paths,
-    "read_markdown_note_file": read_markdown_note_file
+    "read_markdown_note_file": read_markdown_note_file,
+    "get_markdown_headers": get_markdown_headers
 }
 
 # if __name__ == "__main__":

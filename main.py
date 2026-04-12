@@ -5,7 +5,7 @@ from llm.llm import LLM
 from agent.controller import AgentController
 from agent.schema import ReasonAndPlan, Brainstorm, Clarification
 from md_editor.propose_edit import propose_markdown_edit
-from agent.tools import TOOLS, tool_dict, list_note_paths
+from agent.tools import TOOLS, tool_dict, list_note_paths, get_markdown_headers
 
 # from pydantic_core._pydantic_core import ValidationError
 
@@ -77,15 +77,15 @@ from agent.tools import TOOLS, tool_dict, list_note_paths
 
 
 if __name__ == "__main__":
-#     model = LLM(model="qwen/qwen3-1.7b", sys_prompt="Be helpful.", tool_descriptions=[])
-#     my_agent = AgentController(model=model, tools=[])
-#     print("Hello World")
-#     user_input = input()
-#     while user_input:
-#         message, external_history, internal_history = my_agent.run(user_input=user_input)
-#         print(message)
-#         user_input = input()
-    print(list_note_paths())
+    model = LLM(model="qwen/qwen3.5-35b-a3b", sys_prompt="Be helpful.", tool_descriptions=[])
+    my_agent = AgentController(model=model, tools=[])
+    print("Hello World")
+    user_input = input()
+    while user_input:
+        message, external_history, internal_history = my_agent.run(user_input=user_input)
+        print(message)
+        user_input = input()
+    # print(json.dumps(list_note_paths(), indent=4))
 
 
 # import lmstudio as lms
