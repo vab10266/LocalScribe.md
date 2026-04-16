@@ -3,3 +3,5 @@ openai
 chromadb
 openai-agents
 lmstudio
+lancedb
+pyarrow
